@@ -1,20 +1,23 @@
 # Golang docker image options
 ARG GO_IMAGE=buster
-ARG GO_VERSION=1.13.15
+ARG GO_VERSION=1.17.0
 
 # Libtool arguments
-ARG LIBTOOL_VERSION=2.4.6
+ARG LIBTOOL_VERSION=2.4.6_3
+ARG LIBTOOL_SUM=9e4b12c13734a5f1b72dfd48aa71faa8fd81bbf2d16af90d1922556206caecc3
+
+# Packages repository as dependencies to build
+ARG REPO_URL=https://github.com/vxcontrol/vxbuild-cross/releases/download/v0.0.0
 
 # Mac OS SDK used to osxcross
-ARG OSX_SDK=MacOSX10.11.sdk
-ARG OSX_SDK_URL=https://github.com/vxcontrol/vxbuild-cross/releases/download/v0.0.0
-ARG OSX_SDK_SUM=98cdd56e0f6c1f9e1af25e11dd93d2e7d306a4aa50430a2bc6bc083ac67efbb8
+ARG OSX_SDK=MacOSX10.15.sdk
+ARG OSX_SDK_SUM=d97054a0aaf60cb8e9224ec524315904f0309fbbbac763eb7736bdfbdad6efc8
 
 # osxcross arguments
-ARG OSX_VERSION_MIN=10.11
-ARG OSX_CODENAME=el_capitan
-ARG OSX_CROSS_COMMIT=ee54d9fd43b45947ee74c99282b360cd27a8f1cb
-ARG OSX_CROSS_REQUIREMENTS=""
+ARG OSX_VERSION_MIN=10.12
+ARG OSX_CODENAME=catalina
+ARG OSX_CROSS_COMMIT=bee9df60f169abdbe88d8529dbcc1ec57acf656d
+ARG OSX_CROSS_REQUIREMENTS="libssl-dev libxml2-dev zlib1g-dev"
 
 # Preparing base part of target image
 FROM golang:${GO_VERSION}-${GO_IMAGE} AS base
@@ -26,9 +29,9 @@ ENV OSX_CROSS_PATH=/osxcross
 # Pulling and checking SDK tarball
 FROM base AS osx-sdk
 ARG OSX_SDK
-ARG OSX_SDK_URL
 ARG OSX_SDK_SUM
-ADD ${OSX_SDK_URL}/${OSX_SDK}.tar.xz "${OSX_CROSS_PATH}/tarballs/${OSX_SDK}.tar.xz"
+ARG REPO_URL
+ADD ${REPO_URL}/${OSX_SDK}.tar.xz "${OSX_CROSS_PATH}/tarballs/${OSX_SDK}.tar.xz"
 RUN echo "${OSX_SDK_SUM}" "${OSX_CROSS_PATH}/tarballs/${OSX_SDK}.tar.xz" | sha256sum -c -
 
 # Preparing of osxcross build
@@ -61,11 +64,14 @@ RUN rm -rf "${OSX_CROSS_PATH}/tarballs/*"
 # Adding libtool to osxcross
 FROM base AS libtool
 ARG LIBTOOL_VERSION
+ARG LIBTOOL_SUM
 ARG OSX_CODENAME
 ARG OSX_SDK
+ARG REPO_URL
+ADD ${REPO_URL}/libtool-${LIBTOOL_VERSION}.${OSX_CODENAME}.bottle.tar.gz "${OSX_CROSS_PATH}/tarballs/libtool-${LIBTOOL_VERSION}.tar.gz"
+RUN echo "${LIBTOOL_SUM}" "${OSX_CROSS_PATH}/tarballs/libtool-${LIBTOOL_VERSION}.tar.gz" | sha256sum -c -
 RUN mkdir -p "${OSX_CROSS_PATH}/target/SDK/${OSX_SDK}/usr/"
-RUN curl -fsSL "https://homebrew.bintray.com/bottles/libtool-${LIBTOOL_VERSION}.${OSX_CODENAME}.bottle.tar.gz" \
-	| gzip -dc | tar xf - \
+RUN gzip -dc "${OSX_CROSS_PATH}/tarballs/libtool-${LIBTOOL_VERSION}.tar.gz" | tar xf - \
 		-C "${OSX_CROSS_PATH}/target/SDK/${OSX_SDK}/usr/" \
 		--strip-components=2 \
 		"libtool/${LIBTOOL_VERSION}/include/" \

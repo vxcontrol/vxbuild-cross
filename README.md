@@ -5,7 +5,7 @@ Cross compile build system to assemble VXMonitor project.
 
 These images are available from https://hub.docker.com/r/vxcontrol/vxbuild-cross and is used to build.
 
-**Important**: these images was builded with OSX SDK 10.11 to make it with 10.10 or 10.15 SDKs, please, use custom builds from Building part of Readme.
+**Important**: these images was builded with OSX SDK 10.15 to make it with 10.10 or 10.11 SDKs, please, use custom builds from Building part of Readme.
 
 ## Fork
 This project based on original repository by [docker/golang-cross](https://github.com/docker/golang-cross).
@@ -14,21 +14,24 @@ This project based on original repository by [docker/golang-cross](https://githu
 ```Dockerfile
 # Golang docker image options
 ARG GO_IMAGE=buster
-ARG GO_VERSION=1.13.15
+ARG GO_VERSION=1.17.0
 
 # Libtool arguments
-ARG LIBTOOL_VERSION=2.4.6
+ARG LIBTOOL_VERSION=2.4.6_3
+ARG LIBTOOL_SUM=9e4b12c13734a5f1b72dfd48aa71faa8fd81bbf2d16af90d1922556206caecc3
+
+# Packages repository as dependencies to build
+ARG REPO_URL=https://github.com/vxcontrol/vxbuild-cross/releases/download/v0.0.0
 
 # Mac OS SDK used to osxcross
-ARG OSX_SDK=MacOSX10.11.sdk
-ARG OSX_SDK_URL=https://github.com/vxcontrol/vxbuild-cross/releases/download/v0.0.0
-ARG OSX_SDK_SUM=98cdd56e0f6c1f9e1af25e11dd93d2e7d306a4aa50430a2bc6bc083ac67efbb8
+ARG OSX_SDK=MacOSX10.15.sdk
+ARG OSX_SDK_SUM=d97054a0aaf60cb8e9224ec524315904f0309fbbbac763eb7736bdfbdad6efc8
 
 # osxcross arguments
-ARG OSX_VERSION_MIN=10.11
-ARG OSX_CODENAME=el_capitan
-ARG OSX_CROSS_COMMIT=ee54d9fd43b45947ee74c99282b360cd27a8f1cb
-ARG OSX_CROSS_REQUIREMENTS=""
+ARG OSX_VERSION_MIN=10.12
+ARG OSX_CODENAME=catalina
+ARG OSX_CROSS_COMMIT=bee9df60f169abdbe88d8529dbcc1ec57acf656d
+ARG OSX_CROSS_REQUIREMENTS="libssl-dev libxml2-dev zlib1g-dev"
 ```
 
 ## Building
@@ -47,27 +50,47 @@ docker build --no-cache -t local/vxbuild-cross:latest .
 ```bash
 docker build \
  --build-arg GO_IMAGE="stretch" \
- --build-arg GO_VERSION="1.16.2" \
- -t local/vxbuild-cross:1.16.2-stretch .
+ --build-arg GO_VERSION="1.17.0" \
+ -t local/vxbuild-cross:1.17.0-stretch .
 ```
 
 ### Use arguments to choose MacOS SDK 10.10
 ```bash
 docker build \
+ --build-arg LIBTOOL_VERSION="2.4.6_1" \
+ --build-arg LIBTOOL_SUM="0eb206c0f51e8ce2e3e9340b5ce3c8ecef961ae6696f676073327a7ac04e5c0b" \
  --build-arg OSX_CODENAME="yosemite" \
+ --build-arg OSX_CROSS_COMMIT="ee54d9fd43b45947ee74c99282b360cd27a8f1cb" \
+ --build-arg OSX_CROSS_REQUIREMENTS="" \
  --build-arg OSX_VERSION_MIN="10.10" \
  --build-arg OSX_SDK="MacOSX10.10.sdk" \
  --build-arg OSX_SDK_SUM="631b4144c6bf75bf7a4d480d685a9b5bda10ee8d03dbf0db829391e2ef858789" \
  -t local/vxbuild-cross:10.10-sdk .
 ```
 
-### Use arguments to choose MacOS SDK 10.15
+### Use arguments to choose MacOS SDK 10.11
 ```bash
 docker build \
- --build-arg OSX_CODENAME="catalina" \
+ --build-arg LIBTOOL_VERSION="2.4.6_1" \
+ --build-arg LIBTOOL_SUM="b7651d0a082e2f103f03ca3a5ed831e2ff5655ccc1044ac0452e4d1825475a35" \
+ --build-arg OSX_CODENAME="el_capitan" \
+ --build-arg OSX_CROSS_COMMIT="ee54d9fd43b45947ee74c99282b360cd27a8f1cb" \
+ --build-arg OSX_CROSS_REQUIREMENTS="" \
+ --build-arg OSX_VERSION_MIN="10.11" \
+ --build-arg OSX_SDK="MacOSX10.11.sdk" \
+ --build-arg OSX_SDK_SUM="98cdd56e0f6c1f9e1af25e11dd93d2e7d306a4aa50430a2bc6bc083ac67efbb8" \
+ -t local/vxbuild-cross:10.10-sdk .
+```
+
+### Use arguments to choose MacOS SDK 10.15 (by default)
+```bash
+docker build \
  --build-arg LIBTOOL_VERSION="2.4.6_3" \
+ --build-arg LIBTOOL_SUM="9e4b12c13734a5f1b72dfd48aa71faa8fd81bbf2d16af90d1922556206caecc3" \
+ --build-arg OSX_CODENAME="catalina" \
  --build-arg OSX_CROSS_COMMIT="bee9df60f169abdbe88d8529dbcc1ec57acf656d" \
  --build-arg OSX_CROSS_REQUIREMENTS="libssl-dev libxml2-dev zlib1g-dev" \
+ --build-arg OSX_VERSION_MIN="10.12" \
  --build-arg OSX_SDK="MacOSX10.15.sdk" \
  --build-arg OSX_SDK_SUM="d97054a0aaf60cb8e9224ec524315904f0309fbbbac763eb7736bdfbdad6efc8" \
  -t local/vxbuild-cross:10.15-sdk .
