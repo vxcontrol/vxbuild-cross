@@ -1,6 +1,6 @@
 # Golang docker image options
 ARG GO_IMAGE=buster
-ARG GO_VERSION=1.17.0
+ARG GO_VERSION=1.19.0
 
 # Libtool arguments
 ARG LIBTOOL_VERSION=2.4.6_3
