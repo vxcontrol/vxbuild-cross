@@ -87,6 +87,7 @@ RUN apt-get update -qq && apt-get install -y -q --no-install-recommends \
     gcc-mingw-w64 \
     g++-mingw-w64 \
     parallel \
+    jq \
  && curl -sfL https://install.goreleaser.com/github.com/goreleaser/goreleaser.sh | sh -s -- -b /usr/local/bin \
  && apt-get clean && rm -rf /var/lib/apt/lists/*
 
