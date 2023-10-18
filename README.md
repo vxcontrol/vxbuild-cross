@@ -14,7 +14,7 @@ This project based on original repository by [docker/golang-cross](https://githu
 ```Dockerfile
 # Golang docker image options
 ARG GO_IMAGE=buster
-ARG GO_VERSION=1.17.0
+ARG GO_VERSION=1.20.5
 
 # Libtool arguments
 ARG LIBTOOL_VERSION=2.4.6_3
@@ -52,6 +52,13 @@ docker build \
  --build-arg GO_IMAGE="stretch" \
  --build-arg GO_VERSION="1.17.0" \
  -t local/vxbuild-cross:1.17.0-stretch .
+```
+
+### Use arguments to build multi-platform images
+```bash
+docker buildx build \
+ --platform linux/amd64,linux/arm64/v8 \
+ -t local/vxbuild-cross:multiarch .
 ```
 
 ### Use arguments to choose MacOS SDK 10.10
@@ -116,11 +123,20 @@ docker build \
 * `GOOS=windows GOARCH=amd64 go build`
 * `GOOS=windows GOARCH=386 go build`
 
-### Cross compile Go project with cgo (docker container inside)
+### Cross compile Go project with cgo on linux/amd64 (docker container inside)
 
 * `GOOS=linux GOARCH=amd64 CC=gcc CXX=g++ CGO_ENABLED=1 go build`
 * `GOOS=linux GOARCH=386 CC=gcc CXX=g++ CGO_ENABLED=1 go build`
 * `GOOS=darwin GOARCH=amd64 CC=o64-clang CXX=o64-clang++ CGO_ENABLED=1 go build`
-* `GOOS=darwin GOARCH=386 CC=o32-clang CXXo32-clang++ CGO_ENABLED=1 go build`
+* `GOOS=darwin GOARCH=386 CC=o32-clang CXX=o32-clang++ CGO_ENABLED=1 go build`
+* `GOOS=windows GOARCH=amd64 CC=x86_64-w64-mingw32-gcc CXX=x86_64-w64-mingw32-g++ CGO_ENABLED=1 go build`
+* `GOOS=windows GOARCH=386 CC=i686-w64-mingw32-gcc CXX=i686-w64-mingw32-g++ CGO_ENABLED=1 go build`
+
+### Cross compile Go project with cgo on linux/arm64 (docker container inside)
+
+* `GOOS=linux GOARCH=amd64 CC=x86_64-linux-gnu-gcc CXX=x86_64-linux-gnu-g++ CGO_ENABLED=1 go build`
+* `GOOS=linux GOARCH=386 CC=i686-linux-gnu-gcc CXX=i686-linux-gnu-g++ CGO_ENABLED=1 go build`
+* `GOOS=darwin GOARCH=amd64 CC=o64-clang CXX=o64-clang++ CGO_ENABLED=1 go build`
+* `GOOS=darwin GOARCH=386 CC=o32-clang CXX=o32-clang++ CGO_ENABLED=1 go build`
 * `GOOS=windows GOARCH=amd64 CC=x86_64-w64-mingw32-gcc CXX=x86_64-w64-mingw32-g++ CGO_ENABLED=1 go build`
 * `GOOS=windows GOARCH=386 CC=i686-w64-mingw32-gcc CXX=i686-w64-mingw32-g++ CGO_ENABLED=1 go build`

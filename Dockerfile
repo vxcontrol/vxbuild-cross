@@ -1,6 +1,6 @@
 # Golang docker image options
 ARG GO_IMAGE=buster
-ARG GO_VERSION=1.19.0
+ARG GO_VERSION=1.20.5
 
 # Libtool arguments
 ARG LIBTOOL_VERSION=2.4.6_3
@@ -78,7 +78,21 @@ RUN gzip -dc "${OSX_CROSS_PATH}/tarballs/libtool-${LIBTOOL_VERSION}.tar.gz" | ta
 		"libtool/${LIBTOOL_VERSION}/lib/"
 
 # Making the final image with goreleaser and osxcross
-FROM osx-cross-base AS final
+FROM --platform=linux/arm64/v8 osx-cross-base AS final-arm64
+ARG DEBIAN_FRONTEND=noninteractive
+RUN apt-get update -qq && apt-get install -y -q --no-install-recommends \
+    libltdl-dev \
+    gcc-multilib-i686-linux-gnu \
+    g++-multilib-i686-linux-gnu \
+    gcc-multilib-x86-64-linux-gnu \
+    g++-multilib-x86-64-linux-gnu \
+    gcc-mingw-w64 \
+    g++-mingw-w64 \
+    parallel \
+    jq \
+ && apt-get clean && rm -rf /var/lib/apt/lists/*
+
+FROM --platform=linux/amd64 osx-cross-base AS final-amd64
 ARG DEBIAN_FRONTEND=noninteractive
 RUN apt-get update -qq && apt-get install -y -q --no-install-recommends \
     libltdl-dev \
@@ -89,6 +103,12 @@ RUN apt-get update -qq && apt-get install -y -q --no-install-recommends \
     parallel \
     jq \
  && apt-get clean && rm -rf /var/lib/apt/lists/*
+
+###################
+# multiarch build stage
+###################
+
+FROM final-${TARGETARCH} as final
 
 COPY --from=osx-cross "${OSX_CROSS_PATH}/." "${OSX_CROSS_PATH}/"
 COPY --from=libtool   "${OSX_CROSS_PATH}/." "${OSX_CROSS_PATH}/"
