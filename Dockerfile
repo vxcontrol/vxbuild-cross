@@ -45,9 +45,13 @@ RUN apt-get update -qq && apt-get install -y -q --no-install-recommends \
     libc++-dev \
     file \
     patch \
+    vim \
+    jq \
+    git \
     xz-utils \
     ${OSX_CROSS_REQUIREMENTS} \
  && apt-get clean && rm -rf /var/lib/apt/lists/*
+RUN git config --global --add safe.directory '*'
 
 # Building osxcross
 FROM osx-cross-base AS osx-cross
@@ -89,7 +93,6 @@ RUN apt-get update -qq && apt-get install -y -q --no-install-recommends \
     gcc-mingw-w64 \
     g++-mingw-w64 \
     parallel \
-    jq \
  && apt-get clean && rm -rf /var/lib/apt/lists/*
 
 FROM --platform=linux/amd64 osx-cross-base AS final-amd64
@@ -101,7 +104,6 @@ RUN apt-get update -qq && apt-get install -y -q --no-install-recommends \
     gcc-mingw-w64 \
     g++-mingw-w64 \
     parallel \
-    jq \
  && apt-get clean && rm -rf /var/lib/apt/lists/*
 
 ###################
